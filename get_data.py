@@ -108,6 +108,8 @@ def ratings_to_train_test(dataset_size,
 
 
 def download_2_data_sets():
+    if os.path.isfile('ml-1m.pkl') and os.path.isfile('ml-10m.pkl'):
+        return
     download_ratings_1_10_m()
     keep_ratings_add_cv_partition()
 

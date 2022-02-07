@@ -8,16 +8,14 @@ class AutoRecBase(pl.LightningDataModule):
                  hidden_size: int,
                  activation_function_1,
                  activation_function_2,
-                 loss,
-                 train_data_loader):
+                 loss):
         super(AutoRecBase, self).__init__()
 
         self.encoder = nn.Linear(number_of_items, hidden_size)
         self.act_1 = activation_function_1()
         self.decoder = nn.Linear(hidden_size, number_of_items)
         self.act_2 = activation_function_2()
-        self.loss = loss
-        self.train_dataloader = train_data_loader
+        self.loss_func = loss
 
     def forward(self, x):
         out = self.encoder(x)
@@ -33,18 +31,12 @@ class AutoRecBase(pl.LightningDataModule):
     def training_step(self, train_batch, batch_idx):
         x, y = train_batch
         x_hat = self.forward(x)
-        loss = self.loss(x_hat, x)
+        loss = self.loss_func(x_hat, x)
         self.log('train_loss', loss)
         return loss
 
     def validation_step(self, val_batch, batch_idx):
         x, y = val_batch
         x_hat = self.forward(x)
-        loss = self.loss(x_hat, x)
+        loss = self.loss_func(x_hat, x)
         self.log('val_loss', loss)
-
-    def set_train_dataloader(self, train_dataloader):
-        self.train_dataloader = train_dataloader
-
-    def train_dataloader(self):
-        return self.train_dataloader
