@@ -18,5 +18,5 @@ if __name__ == '__main__':
                         nn.MSELoss,
                         )
     # training
-    trainer = pl.Trainer(gpus=0)
+    trainer = pl.Trainer(gpus=0,max_epochs=10)
     trainer.fit(model,train_loader, val_loader)
