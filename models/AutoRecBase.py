@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import pytorch_lightning as pl
 
-class AutoRecBase(pl.LightningDataModule):
+class AutoRecBase(pl.LightningModule):
     def __init__(self,
                  number_of_items: int,
                  hidden_size: int,
@@ -15,7 +15,7 @@ class AutoRecBase(pl.LightningDataModule):
         self.act_1 = activation_function_1()
         self.decoder = nn.Linear(hidden_size, number_of_items)
         self.act_2 = activation_function_2()
-        self.loss_func = loss
+        self.loss_func = loss()
 
     def forward(self, x):
         out = self.encoder(x)

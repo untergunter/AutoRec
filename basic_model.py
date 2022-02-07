@@ -19,4 +19,4 @@ if __name__ == '__main__':
                         )
     # training
     trainer = pl.Trainer(gpus=0)
-    trainer.fit(model)
+    trainer.fit(model,train_loader, val_loader)

@@ -99,7 +99,9 @@ def ratings_to_train_test(dataset_size,
 
     train_loader = data_utils.DataLoader(dataset=train_tensor,
                                          batch_size=batch_size,
-                                         shuffle=False)
+                                         shuffle=False,
+                                         num_workers=4)
+
     test_loader = data_utils.DataLoader(dataset=test_tensor,
                                         batch_size=batch_size,
                                         shuffle=False)  # for results debugging
@@ -112,10 +114,3 @@ def download_2_data_sets():
         return
     download_ratings_1_10_m()
     keep_ratings_add_cv_partition()
-
-if __name__ == '__main__':
-    download_2_data_sets()
-    train, test = ratings_to_train_test(1,
-                                        0,
-                                        1,
-                                        10)
