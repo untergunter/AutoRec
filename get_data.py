@@ -60,19 +60,27 @@ def ratings_to_train_test(dataset_size,
     assert validation_partition != train_partition
     ratings = load_obj(f'ml-{dataset_size}m.pkl')
 
+    pivot_nrmlizer = pd.DataFrame({'movie_id': ratings['movie_id'].unique()})
+    pivot_nrmlizer['user_id'] = -1
+    pivot_nrmlizer['rating'] = 1
+    pivot_nrmlizer['partition'] = 11
+
     train_x = ratings[~ratings['partition'].isin({validation_partition, train_partition})]
     validation_x = ratings[~ratings['partition'].isin({validation_partition})]
 
-    X_train = pd.pivot_table(train_x,
+    X_train = pd.pivot_table(pd.concat([train_x, pivot_nrmlizer]),
                              values='rating',
                              index=['user_id'],
                              columns=['movie_id'])
+    X_train = X_train[X_train.index != -1]
     X_train.fillna(3, inplace=True)
+
     # y train is also x_test
-    Y_train = pd.pivot_table(validation_x,
+    Y_train = pd.pivot_table(pd.concat([validation_x, pivot_nrmlizer]),
                              values='rating',
                              index=['user_id'],
                              columns=['movie_id'])
+    Y_train = Y_train[Y_train.index != -1]
     Y_train.fillna(3, inplace=True)
 
     Y_test = pd.pivot_table(ratings,
@@ -81,6 +89,7 @@ def ratings_to_train_test(dataset_size,
                             columns=['movie_id'])
     Y_test.fillna(3, inplace=True)
 
+    batch_index = torch.tensor(X_train.index.values)
     X_train_tensor = torch.tensor(X_train.values.astype(np.float32))
     Y_train_tensor = torch.tensor(Y_train.values.astype(np.float32))
     Y_test_tensor = torch.tensor(Y_test.values.astype(np.float32))
@@ -90,7 +99,7 @@ def ratings_to_train_test(dataset_size,
 
     train_loader = data_utils.DataLoader(dataset=train_tensor,
                                          batch_size=batch_size,
-                                         shuffle=True)
+                                         shuffle=False)
     test_loader = data_utils.DataLoader(dataset=test_tensor,
                                         batch_size=batch_size,
                                         shuffle=False)  # for results debugging
