@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader, random_split
 import pytorch_lightning as pl
 
 
-class AutoRec(pl.LightningModule):
+class VarAutoRec(pl.LightningModule):
     def __init__(self):
         super().__init__()
         self.encoder = nn.Sequential(nn.Linear(28 * 28, 128), nn.ReLU(), nn.Linear(128, 3))
@@ -30,5 +30,3 @@ class AutoRec(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
         return optimizer
-
-

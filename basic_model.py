@@ -1,10 +1,7 @@
-from get_data import download_2_data_sets,ratings_to_train_test
+from scripts.get_data import download_2_data_sets,ratings_to_train_test
 from models.AutoRecBase import AutoRecBase
-import torch
 import torch.nn as nn
 import pytorch_lightning as pl
-from torch.nn import functional as F
-
 
 if __name__ == '__main__':
     download_2_data_sets()

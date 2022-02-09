@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import pytorch_lightning as pl
 
+
 class AutoRecBase(pl.LightningModule):
     def __init__(self,
                  number_of_items: int,
