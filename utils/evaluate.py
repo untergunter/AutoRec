@@ -27,7 +27,7 @@ def eval_one_rating(predictions):
     hr = get_hit_ratio(predictions)
     ndcg = get_ndcg(predictions)
     mrr = get_mrr(predictions)
-    return (hr, ndcg, mrr)
+    return hr, ndcg, mrr
 
 
 def get_hit_ratio(ranklist):
