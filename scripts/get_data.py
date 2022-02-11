@@ -53,61 +53,67 @@ def keep_ratings_add_cv_partition():
 def ratings_to_train_test(dataset_size,
                           validation_partition,
                           train_partition,
-                          batch_size):
+                          batch_size,
+                          unseen_na_to:int=3):
     assert dataset_size in {1, 10}, 'datasets are ml-1m and ml-10m, size must be 1 or 10'
     assert validation_partition in set(i for i in range(10)), 'using 10 cross validations'
     assert train_partition in set(i for i in range(10)), 'using 10 cross validations'
     assert validation_partition != train_partition
     ratings = load_obj(f'ml-{dataset_size}m.pkl')
 
-    pivot_nrmlizer = pd.DataFrame({'movie_id': ratings['movie_id'].unique()})
-    pivot_nrmlizer['user_id'] = -1
-    pivot_nrmlizer['rating'] = 1
-    pivot_nrmlizer['partition'] = 11
+    # making sure each batch has all the movie id's
+    pivot_normalizer = pd.DataFrame({'movie_id': ratings['movie_id'].unique()})
+    pivot_normalizer['user_id'] = -1
+    pivot_normalizer['rating'] = 1
+    pivot_normalizer['partition'] = 11
 
     train_x = ratings[~ratings['partition'].isin({validation_partition, train_partition})]
     validation_x = ratings[~ratings['partition'].isin({validation_partition})]
 
-    X_train = pd.pivot_table(pd.concat([train_x, pivot_nrmlizer]),
+    majority_train = pd.pivot_table(pd.concat([train_x, pivot_normalizer]),
                              values='rating',
                              index=['user_id'],
                              columns=['movie_id'])
-    X_train = X_train[X_train.index != -1]
-    X_train.fillna(3, inplace=True)
+    majority_train = majority_train[majority_train.index != -1]
+    majority_train.fillna(unseen_na_to, inplace=True)
 
     # y train is also x_test
-    Y_train = pd.pivot_table(pd.concat([validation_x, pivot_nrmlizer]),
+    minority_1 = pd.pivot_table(pd.concat([validation_x, pivot_normalizer]),
                              values='rating',
                              index=['user_id'],
                              columns=['movie_id'])
-    Y_train = Y_train[Y_train.index != -1]
-    Y_train.fillna(3, inplace=True)
+    minority_1 = minority_1[minority_1.index != -1]
+    minority_1_na_mask = minority_1.isna()
+    minority_1.fillna(unseen_na_to, inplace=True)
 
-    Y_test = pd.pivot_table(ratings,
+    minority_2 = pd.pivot_table(ratings,
                             values='rating',
                             index=['user_id'],
                             columns=['movie_id'])
-    Y_test.fillna(3, inplace=True)
+    minority_2_na_mask = minority_2.isna()
+    minority_2.fillna(unseen_na_to, inplace=True)
 
-    batch_index = torch.tensor(X_train.index.values)
-    X_train_tensor = torch.tensor(X_train.values.astype(np.float32))
-    Y_train_tensor = torch.tensor(Y_train.values.astype(np.float32))
-    Y_test_tensor = torch.tensor(Y_test.values.astype(np.float32))
 
-    train_tensor = data_utils.TensorDataset(X_train_tensor, Y_train_tensor)
-    test_tensor = data_utils.TensorDataset(Y_train_tensor, Y_test_tensor)
+    X_train_tensor = torch.tensor(majority_train.values.astype(np.float32))
+    Y_train_tensor = torch.tensor(minority_1.values.astype(np.float32))
+    Y_test_tensor = torch.tensor(minority_2.values.astype(np.float32))
+
+    Y_train_isna = torch.tensor(minority_1_na_mask.values.astype(np.float32))
+    Y_test_isna = torch.tensor(minority_2_na_mask.values.astype(np.float32))
+
+    train_tensor = data_utils.TensorDataset(X_train_tensor, Y_train_tensor,Y_train_isna)
+    test_tensor = data_utils.TensorDataset(Y_train_tensor, Y_test_tensor,Y_test_isna)
 
     train_loader = data_utils.DataLoader(dataset=train_tensor,
                                          batch_size=batch_size,
-                                         shuffle=False,
+                                         shuffle=True,
                                          num_workers=4)
 
     test_loader = data_utils.DataLoader(dataset=test_tensor,
                                         batch_size=batch_size,
-                                        shuffle=False)  # for results debugging
+                                        shuffle=False)  # for results evaluation
 
-    return train_loader, test_loader
-
+    return train_loader,test_loader
 
 def download_2_data_sets():
     if os.path.isfile('ml-1m.pkl') and os.path.isfile('ml-10m.pkl'):

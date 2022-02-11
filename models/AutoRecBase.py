@@ -30,14 +30,23 @@ class AutoRecBase(pl.LightningModule):
         return optimizer
 
     def training_step(self, train_batch, batch_idx):
-        x, y = train_batch
-        x_hat = self.forward(x)
-        loss = self.loss_func(x_hat, x)
+        x, y, y_mask = train_batch
+        y_hat = self.forward(x)
+
+        # set to 0 unseen by users
+        y_hat *= y_mask
+        y *= y_mask
+        loss = self.loss_func(y_hat, y_mask) / y_mask.sum()
         self.log('train_loss', loss)
         return loss
 
     def validation_step(self, val_batch, batch_idx):
-        x, y = val_batch
-        x_hat = self.forward(x)
-        loss = self.loss_func(x_hat, x)
-        self.log('val_loss', loss)
+        x, y, y_mask = val_batch
+        y_hat = self.forward(x)
+
+        # set to 0 unseen by users
+        y_hat *= y_mask
+        y *= y_mask
+
+        loss = self.loss_func(y_hat, y_mask)
+        self.log('train_loss', loss)
