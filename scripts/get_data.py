@@ -42,8 +42,8 @@ def keep_ratings_add_cv_partition():
             delimiter='::',
             usecols=[0, 1, 2],
             names=['user_id', 'movie_id', 'rating'])
-        ten_partitions = cycle([i for i in range(9)])  # each user appears at least twice in each partition
         ratings.sort_values('user_id', inplace=True)
+        ten_partitions = cycle([i for i in range(9)])  # each user appears at least twice in each partition
         ratings['partition'] = [next(ten_partitions) for count in range(len(ratings))]
         name = folder.replace('100K', '').lower()
         save_obj(ratings, name)
@@ -75,7 +75,6 @@ def ratings_to_train_test(dataset_size,
                              index=['user_id'],
                              columns=['movie_id'])
     majority_train = majority_train[majority_train.index != -1]
-    majority_train.fillna(unseen_na_to, inplace=True)
 
     # y train is also x_test
     minority_1 = pd.pivot_table(pd.concat([validation_x, pivot_normalizer]),
@@ -83,26 +82,30 @@ def ratings_to_train_test(dataset_size,
                              index=['user_id'],
                              columns=['movie_id'])
     minority_1 = minority_1[minority_1.index != -1]
-    minority_1_na_mask = minority_1.isna()
-    minority_1.fillna(unseen_na_to, inplace=True)
+    minority_1_na_mask = ~minority_1.isna()
+
 
     minority_2 = pd.pivot_table(ratings,
                             values='rating',
                             index=['user_id'],
                             columns=['movie_id'])
-    minority_2_na_mask = minority_2.isna()
-    minority_2.fillna(unseen_na_to, inplace=True)
+    minority_2_na_mask = ~minority_2.isna()
+
+    if unseen_na_to:
+        majority_train.fillna(unseen_na_to, inplace=True)
+        minority_1.fillna(unseen_na_to, inplace=True)
+        minority_2.fillna(unseen_na_to, inplace=True)
 
 
     X_train_tensor = torch.tensor(majority_train.values.astype(np.float32))
     Y_train_tensor = torch.tensor(minority_1.values.astype(np.float32))
     Y_test_tensor = torch.tensor(minority_2.values.astype(np.float32))
 
-    Y_train_isna = torch.tensor(minority_1_na_mask.values.astype(np.float32))
-    Y_test_isna = torch.tensor(minority_2_na_mask.values.astype(np.float32))
+    Y_train_is_not_na = torch.tensor(minority_1_na_mask.values.astype(np.float32))
+    Y_test_is_not_na = torch.tensor(minority_2_na_mask.values.astype(np.float32))
 
-    train_tensor = data_utils.TensorDataset(X_train_tensor, Y_train_tensor,Y_train_isna)
-    test_tensor = data_utils.TensorDataset(Y_train_tensor, Y_test_tensor,Y_test_isna)
+    train_tensor = data_utils.TensorDataset(X_train_tensor, Y_train_tensor,Y_train_is_not_na)
+    test_tensor = data_utils.TensorDataset(Y_train_tensor, Y_test_tensor,Y_test_is_not_na)
 
     train_loader = data_utils.DataLoader(dataset=train_tensor,
                                          batch_size=batch_size,
