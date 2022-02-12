@@ -10,6 +10,7 @@ class AutoRecBase(pl.LightningModule):
                  activation_function_1,
                  activation_function_2,
                  loss,
+                 λ=0.01,
                  lr=0.001):
         super(AutoRecBase, self).__init__()
 
@@ -18,6 +19,7 @@ class AutoRecBase(pl.LightningModule):
         self.decoder = nn.Linear(hidden_size, number_of_items)
         self.act_2 = activation_function_2()
         self.loss_func = loss()
+        self.λ = λ,
         self.lr = lr
 
     def forward(self, x):
@@ -28,7 +30,7 @@ class AutoRecBase(pl.LightningModule):
         return out
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.λ)
         return optimizer
 
     def training_step(self, train_batch, batch_idx):
@@ -38,7 +40,7 @@ class AutoRecBase(pl.LightningModule):
         # set to 0 unseen by users
         y_hat *= y_mask
         y *= y_mask
-        loss = self.loss_func(y_hat, y_mask) / y_mask.sum()
+        loss = torch.sum(self.loss_func(y_hat, y)*y_mask)
         self.log('train_loss', loss)
         return loss
 
