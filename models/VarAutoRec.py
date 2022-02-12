@@ -45,7 +45,10 @@ class VarAutoRec(AutoRecBase):
         y *= y_mask
 
         kl_div = -0.5*(torch.sum(1 + encoded_var - encoded_mean**2 - torch.exp(encoded_var), axis=1))
+        kl_div = kl_div.mean()
 
         loss = torch.sum(self.loss_func(y_hat, y)*y_mask)
+        loss = loss + kl_div
+
         self.log('train_loss', loss)
         return loss
