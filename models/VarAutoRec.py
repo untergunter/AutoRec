@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import pytorch_lightning as pl
 from models.AutoRecBase import AutoRecBase
 
 
@@ -14,29 +13,39 @@ class VarAutoRec(AutoRecBase):
                  loss,
                  λ=0.01,
                  lr=0.001):
-        super(VarAutoRec, self).__init__()
+        super(VarAutoRec, self).__init__(number_of_items=number_of_items,
+                                         hidden_size=hidden_size,
+                                         activation_function_1=activation_function_1,
+                                         activation_function_2=activation_function_2,
+                                         loss=loss,
+                                         λ=λ,
+                                         lt=lr)
 
-        self.encoder = nn.Linear(number_of_items, hidden_size)
-        self.act_1 = activation_function_1()
         self.log_var_layer = nn.Linear(hidden_size, 2)
-
         self.mean_layer = nn.Linear(hidden_size, 2)
-        self.decoder = nn.Linear(hidden_size, number_of_items)
-
-        self.act_2 = activation_function_2()
-        self.loss_func = loss()
-        self.λ = λ,
-        self.lr = lr
 
     def forward(self, x):
         out = self.encoder(x)
-        out = self.act_1(out)
+        encoded = self.act_1(out)
 
-        out_mean, out_var = self.mean_layer(out), self.log_var_layer(out)
-        eps = torch.randn(out_mean.size(0), out_mean.size(1)).to(out_mean.get_device())
-        out = out_mean + eps * torch.exp(out_var/2)
+        encoded_mean, encoded_var = self.mean_layer(encoded), self.log_var_layer(encoded)
+        eps = torch.randn(encoded_mean.size(0), encoded_mean.size(1)).to(encoded_mean.get_device())
+        out = encoded_mean + eps * torch.exp(encoded_var/2)
 
         out = self.decoder(out)
         out = self.act_2(out)
-        return out
+        return encoded, encoded_mean, encoded_var, out
 
+    def training_step(self, train_batch, batch_idx):
+        x, y, y_mask = train_batch
+        encoded, encoded_mean, encoded_var, y_hat = self.forward(x)
+
+        # set to 0 unseen by users
+        y_hat *= y_mask
+        y *= y_mask
+
+        kl_div = -0.5*(torch.sum(1 + encoded_var - encoded_mean**2 - torch.exp(encoded_var), axis=1))
+
+        loss = torch.sum(self.loss_func(y_hat, y)*y_mask)
+        self.log('train_loss', loss)
+        return loss
