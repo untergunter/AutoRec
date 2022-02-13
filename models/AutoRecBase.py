@@ -18,7 +18,7 @@ class AutoRecBase(pl.LightningModule):
         self.act_1 = activation_function_1()
         self.decoder = nn.Linear(hidden_size, number_of_items)
         self.act_2 = activation_function_2()
-        self.loss_func = loss()
+        self.loss_func = loss
         self.λ = λ,
         self.lr = lr
 
