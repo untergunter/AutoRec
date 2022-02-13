@@ -8,6 +8,7 @@ import torch.utils.data as data_utils
 from scripts.get_data import save_obj, load_obj
 from itertools import cycle
 
+
 def get_2_other_datasets():
     if os.path.isfile('flixster.pkl') and os.path.isfile('douban.pkl'):
         return

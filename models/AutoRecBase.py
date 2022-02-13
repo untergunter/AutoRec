@@ -42,6 +42,7 @@ class AutoRecBase(pl.LightningModule):
         y_hat *= y_mask
         y *= y_mask
         loss = torch.sum(self.loss_func(y_hat, y)*y_mask)
+        loss = loss/y_mask.sum()
         self.log('train_loss', loss)
         return loss
 

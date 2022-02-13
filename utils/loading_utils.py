@@ -12,9 +12,9 @@ def load_obj(name):
         return pickle.load(f)
 
 
-def save_model(model, lr, hidden_size):
-    torch.save(model.state_dict(), f"obj/{type(model).__name__}_{lr}_{hidden_size}_model_dict.pt")
+def save_model(model, activation, hidden_size, lr, λ, is_default_dataset):
+    torch.save(model.state_dict(), f"obj/{type(model).__name__}_{activation}_{hidden_size}_{lr}_{λ}_{is_default_dataset}_model_dict.pt")
 
 
-def load_model(model, lr, hidden_size):
-    model.load_state_dict(torch.load(f"obj/{type(model).__name__}_{lr}_{hidden_size}_model_dict.pt"))
+def load_model(model, activation, hidden_size, lr, λ, is_default_dataset):
+    model.load_state_dict(torch.load(f"obj/{type(model).__name__}_{activation}_{hidden_size}_{lr}_{λ}_{is_default_dataset}_model_dict.pt"))

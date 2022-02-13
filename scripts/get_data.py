@@ -108,11 +108,12 @@ def ratings_to_train_test(dataset_size,
     train_loader = data_utils.DataLoader(dataset=train_tensor,
                                          batch_size=batch_size,
                                          shuffle=True,
-                                         num_workers=4)
+                                         num_workers=16)
 
     test_loader = data_utils.DataLoader(dataset=test_tensor,
                                         batch_size=batch_size,
-                                        shuffle=False)  # for results evaluation
+                                        shuffle=False,
+                                        num_workers=16)  # for results evaluation
 
     return train_loader, test_loader
 
