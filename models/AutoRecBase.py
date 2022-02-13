@@ -30,7 +30,8 @@ class AutoRecBase(pl.LightningModule):
         return out
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.λ)
+        print(self.λ)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.λ[0])
         return optimizer
 
     def training_step(self, train_batch, batch_idx):
