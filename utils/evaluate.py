@@ -1,17 +1,18 @@
 import numpy as np
 import math
+import pytorch_lightning as pl
 
 
-def evaluate_model(model, test_loader, K):
+def evaluate_model(model: pl.LightningModule, test_loader, K):
     """
     Evaluate the performance (Hit_Ratio, NDCG, MRR) of top-K recommendation
     Return: score of each test rating.
     """
-
+    print(model)
     hits, ndcgs, mrrs = [],[],[]
 
     for user, item, rate in test_loader:
-        predictions = np.argsort(model(user,item).squeeze().detach())
+        predictions = np.argsort(model(user, item).squeeze().detach())
 
         (hr, ndcg, mrr) = eval_one_rating(predictions[:K])
 
