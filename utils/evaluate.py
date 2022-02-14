@@ -11,9 +11,9 @@ def evaluate_model(model: pl.LightningModule, test_loader, K):
     print(model)
     hits, ndcgs, mrrs = [],[],[]
 
-    for user, item, rate in test_loader:
-        predictions = np.argsort(model(user, item).squeeze().detach())
-
+    for X, Y, mask in test_loader:
+        predictions = np.argsort(model(X).squeeze().detach())
+        print(predictions)
         (hr, ndcg, mrr) = eval_one_rating(predictions[:K])
 
         hits.append(hr)
