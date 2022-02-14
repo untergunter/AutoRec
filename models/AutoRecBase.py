@@ -13,14 +13,14 @@ class AutoRecBase(pl.LightningModule):
                  λ=0.01,
                  lr=0.001):
         super(AutoRecBase, self).__init__()
-
         self.encoder = nn.Linear(number_of_items, hidden_size)
         self.act_1 = activation_function_1()
         self.decoder = nn.Linear(hidden_size, number_of_items)
         self.act_2 = activation_function_2()
         self.loss_func = loss
-        self.λ = λ,
+        self.λ = λ
         self.lr = lr
+        self.save_hyperparameters()
 
     def forward(self, x):
         out = self.encoder(x)
@@ -31,7 +31,7 @@ class AutoRecBase(pl.LightningModule):
 
     def configure_optimizers(self):
         print(self.λ)
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.λ[0])
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.λ)
         return optimizer
 
     def training_step(self, train_batch, batch_idx):

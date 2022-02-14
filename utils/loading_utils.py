@@ -12,13 +12,14 @@ def load_obj(name):
         return pickle.load(f)
 
 
-def save_model(model, trainer, activation, hidden_size, lr, λ, is_default_dataset):
-    path = f"obj/{type(model).__name__}_{activation}_{hidden_size}_{lr}_{λ}_{is_default_dataset}_model_dict.ckpt"
+def save_model(model_class, trainer, activation, hidden_size, lr, λ, is_default_dataset):
+    path = f"obj/{model_class.__name__}_{activation.__name__}_{hidden_size}_{lr}_{λ}_{is_default_dataset}_model_dict.ckpt"
     trainer.save_checkpoint(path)
+    return path
 
 
-def load_model(model, activation, hidden_size, lr, λ, is_default_dataset):
-    path = f"obj/{type(model).__name__}_{activation}_{hidden_size}_{lr}_{λ}_{is_default_dataset}_model_dict.ckpt"
-    model = model.load_from_checkpoint(path)
+def load_model(model_class, activation, hidden_size, lr, λ, is_default_dataset):
+    path = f"obj/{model_class.__name__}_{activation.__name__}_{hidden_size}_{lr}_{λ}_{is_default_dataset}_model_dict.ckpt"
+    model = model_class.load_from_checkpoint(path)
     model.eval()
     return model
