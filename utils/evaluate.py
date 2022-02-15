@@ -12,7 +12,11 @@ def evaluate_model(model: pl.LightningModule, test_loader, K=10):
     hits, ndcgs, mrrs = [],[],[]
 
     for X, Y, mask in test_loader:
-        predictions = np.argsort(model(X).squeeze().detach())
+        if type(model).__name__ == "VarAutoRec":
+            _, _, _, predictions = model(X)
+            predictions = np.argsort(predictions.squeeze().detach())
+        else:
+            predictions = np.argsort(model(X).squeeze().detach())
         for i in range(predictions.shape[1]):
             (hr, ndcg, mrr) = eval_one_rating(predictions[:K, i])
 
