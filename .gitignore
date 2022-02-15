@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 # Logs:
-./lightning_logs
+lightning_logs/*
