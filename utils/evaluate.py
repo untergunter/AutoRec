@@ -3,7 +3,7 @@ import math
 import pytorch_lightning as pl
 
 
-def evaluate_model(model: pl.LightningModule, test_loader, K):
+def evaluate_model(model: pl.LightningModule, test_loader, K=10):
     """
     Evaluate the performance (Hit_Ratio, NDCG, MRR) of top-K recommendation
     Return: score of each test rating.
@@ -13,12 +13,12 @@ def evaluate_model(model: pl.LightningModule, test_loader, K):
 
     for X, Y, mask in test_loader:
         predictions = np.argsort(model(X).squeeze().detach())
-        print(predictions)
-        (hr, ndcg, mrr) = eval_one_rating(predictions[:K])
+        for i in range(predictions.shape[1]):
+            (hr, ndcg, mrr) = eval_one_rating(predictions[:K, i])
 
-        hits.append(hr)
-        ndcgs.append(ndcg)
-        mrrs.append(mrr)
+            hits.append(hr)
+            ndcgs.append(ndcg)
+            mrrs.append(mrr)
 
     return hits, ndcgs, mrrs
 
