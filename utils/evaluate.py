@@ -14,11 +14,11 @@ def evaluate_model(model: pl.LightningModule, test_loader, K=10):
     for X, Y, mask in test_loader:
         if type(model).__name__ == "VarAutoRec":
             _, _, _, predictions = model(X)
-            predictions = np.argsort(predictions.squeeze().detach())
+            predictions = np.argsort(predictions.squeeze().detach(), axis=1)
         else:
-            predictions = np.argsort(model(X).squeeze().detach())
-        for i in range(predictions.shape[1]):
-            (hr, ndcg, mrr) = eval_one_rating(predictions[:K, i])
+            predictions = np.argsort(model(X).squeeze().detach(), axis=1)
+        for i in range(predictions.shape[0]):
+            (hr, ndcg, mrr) = eval_one_rating(predictions[i, :K])
 
             hits.append(hr)
             ndcgs.append(ndcg)
