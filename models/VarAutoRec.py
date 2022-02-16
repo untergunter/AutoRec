@@ -7,6 +7,7 @@ class VarAutoRec(AutoRecBase):
 
     def __init__(self,
                  number_of_items: int,
+                 num_of_users: int,
                  hidden_size: int,
                  activation_function_1,
                  activation_function_2,
@@ -14,6 +15,7 @@ class VarAutoRec(AutoRecBase):
                  λ=0.01,
                  lr=0.001):
         super(VarAutoRec, self).__init__(number_of_items=number_of_items,
+                                         num_of_users=num_of_users,
                                          hidden_size=hidden_size,
                                          activation_function_1=activation_function_1,
                                          activation_function_2=activation_function_2,

@@ -113,7 +113,7 @@ def secondary_to_train_test(dataset_name,
 
     return train_loader, test_loader
 
-def secondary_to_train_test_u_(dataset_name,
+def secondary_to_train_test_u(dataset_name,
                             validation_partition,
                             train_partition,
                             batch_size):

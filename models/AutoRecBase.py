@@ -6,6 +6,7 @@ import pytorch_lightning as pl
 class AutoRecBase(pl.LightningModule):
     def __init__(self,
                  number_of_items: int,
+                 num_of_users: int,
                  hidden_size: int,
                  activation_function_1,
                  activation_function_2,

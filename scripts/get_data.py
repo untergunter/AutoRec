@@ -118,7 +118,7 @@ def ratings_to_train_test(dataset_size,
     return train_loader, test_loader
 
 
-def ratings_to_train_test(dataset_size,
+def ratings_to_train_test_u(dataset_size,
                           validation_partition,
                           train_partition,
                           batch_size):
@@ -133,21 +133,23 @@ def ratings_to_train_test(dataset_size,
 
     train_user = torch.tensor(train_x['user_id'].values)
     train_rating = torch.tensor(train_x['rating'].values)
-    train_item = torch.tensor(train_x['item_id'].values)
+    train_item = torch.tensor(train_x['movie_id'].values)
 
     train_tensor = data_utils.TensorDataset(train_user, train_item, train_rating)
     train_loader = data_utils.DataLoader(dataset=train_tensor,
                                          batch_size=batch_size,
-                                         shuffle=False)
+                                         shuffle=False,
+                                         num_workers=16)
 
     test_user = torch.tensor(validation_x['user_id'].values)
     test_rating = torch.tensor(validation_x['rating'].values)
-    test_item = torch.tensor(validation_x['item_id'].values)
+    test_item = torch.tensor(validation_x['movie_id'].values)
 
     test_tensor = data_utils.TensorDataset(test_user, test_item, test_rating)
     test_loader = data_utils.DataLoader(dataset=test_tensor,
                                         batch_size=batch_size,
-                                        shuffle=False)
+                                        shuffle=False,
+                                        num_workers=16)
 
     return train_loader, test_loader
 
