@@ -118,6 +118,40 @@ def ratings_to_train_test(dataset_size,
     return train_loader, test_loader
 
 
+def ratings_to_train_test(dataset_size,
+                          validation_partition,
+                          train_partition,
+                          batch_size):
+    assert dataset_size in {1, 10}, 'datasets are ml-1m and ml-10m, size must be 1 or 10'
+    assert validation_partition in set(i for i in range(10)), 'using 10 cross validations'
+    assert train_partition in set(i for i in range(10)), 'using 10 cross validations'
+    assert validation_partition != train_partition
+    ratings = load_obj(f'ml-{dataset_size}m.pkl')
+
+    train_x = ratings[~ratings['partition'].isin({validation_partition, train_partition})]
+    validation_x = ratings[~ratings['partition'].isin({validation_partition})]
+
+    train_user = torch.tensor(train_x['user_id'].values)
+    train_rating = torch.tensor(train_x['rating'].values)
+    train_item = torch.tensor(train_x['item_id'].values)
+
+    train_tensor = data_utils.TensorDataset(train_user, train_item, train_rating)
+    train_loader = data_utils.DataLoader(dataset=train_tensor,
+                                         batch_size=batch_size,
+                                         shuffle=False)
+
+    test_user = torch.tensor(validation_x['user_id'].values)
+    test_rating = torch.tensor(validation_x['rating'].values)
+    test_item = torch.tensor(validation_x['item_id'].values)
+
+    test_tensor = data_utils.TensorDataset(test_user, test_item, test_rating)
+    test_loader = data_utils.DataLoader(dataset=test_tensor,
+                                        batch_size=batch_size,
+                                        shuffle=False)
+
+    return train_loader, test_loader
+
+
 def download_2_data_sets():
     if os.path.isfile('ml-1m.pkl') and os.path.isfile('ml-10m.pkl'):
         return

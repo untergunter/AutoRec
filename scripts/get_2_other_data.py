@@ -113,3 +113,34 @@ def secondary_to_train_test(dataset_name,
 
     return train_loader, test_loader
 
+def secondary_to_train_test_u_(dataset_name,
+                            validation_partition,
+                            train_partition,
+                            batch_size):
+
+    assert dataset_name in {'flixster', 'douban'}, 'dataset  name must be flixster or douban'
+    ratings = load_obj(f'{dataset_name}.pkl')
+
+    train_x = ratings[~ratings['partition'].isin({validation_partition, train_partition})]
+    validation_x = ratings[~ratings['partition'].isin({validation_partition})]
+
+    train_user = torch.tensor(train_x['user_id'].values)
+    train_rating = torch.tensor(train_x['rating'].values)
+    train_item = torch.tensor(train_x['item_id'].values)
+
+    train_tensor = data_utils.TensorDataset(train_user, train_item, train_rating)
+    train_loader = data_utils.DataLoader(dataset=train_tensor,
+                                        batch_size=batch_size,
+                                        shuffle=False)
+
+
+    test_user = torch.tensor(validation_x['user_id'].values)
+    test_rating = torch.tensor(validation_x['rating'].values)
+    test_item = torch.tensor(validation_x['item_id'].values)
+
+    test_tensor = data_utils.TensorDataset(test_user, test_item, test_rating)
+    test_loader = data_utils.DataLoader(dataset=test_tensor,
+                                        batch_size=batch_size,
+                                        shuffle=False)
+
+    return train_loader,test_loader
