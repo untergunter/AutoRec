@@ -19,15 +19,16 @@ class MF(pl.LightningModule):
         super(MF, self).__init__()
         self.embedding_user_mf = torch.nn.Embedding(num_embeddings=num_of_users, embedding_dim=hidden_size)
         self.embedding_item_mf = torch.nn.Embedding(num_embeddings=number_of_items, embedding_dim=hidden_size)
-        self.l_0 = nn.Linear(20, 1)
+        self.l_0 = nn.Linear(hidden_size, 1)
         self.loss_func = nn.L1Loss()
         self.lr = lr
+        self.hidden_size = hidden_size
 
     def forward(self, user_vec, item_vec):
         user_vec = self.embedding_user_mf(user_vec)
         item_vec = self.embedding_item_mf(item_vec)
-        user_vec = user_vec.view(-1, 20)
-        item_vec = item_vec.view(-1, 20)
+        user_vec = user_vec.view(-1, self.hidden_size)
+        item_vec = item_vec.view(-1, self.hidden_size)
         x = torch.mul(user_vec, item_vec)
         x = self.l_0(x)
         return x
@@ -37,14 +38,14 @@ class MF(pl.LightningModule):
         return optimizer
 
     def training_step(self, train_batch, batch_idx):
-        x, y, r = train_batch
-        r_hat = self.forward(x, y)
-        loss = self.loss_func(r_hat, r)
+        user_vec, item_vec, r = train_batch
+        r_hat = self.forward(user_vec, item_vec)
+        loss = self.loss_func(r_hat.squeeze(), r)
         self.log('train_loss', loss)
         return loss
 
     def validation_step(self, val_batch, batch_idx):
-        x, y, r = val_batch
-        r_hat = self.forward(x, y)
-        loss = self.loss_func(r_hat, r)
+        user_vec, item_vec, r = val_batch
+        r_hat = self.forward(user_vec, item_vec)
+        loss = self.loss_func(r_hat.squeeze(), r)
         self.log('val_loss', loss)
