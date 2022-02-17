@@ -46,17 +46,17 @@ def eval_one_rating(predictions,mask,sg,raw_pred,masked_true,k):
 
 
 def get_hit_ratio(ranklist,mask):
-    hr = sum(i for i in mask if i in ranklist)/len(mask)
+    hr = sum(i for i in mask if i in ranklist)/ max(len(mask),len(ranklist))
     return hr
 
 
 def get_ndcg(masked_true,raw_pred,k):
-    ndcg = ndcg_score(masked_true, raw_pred,k)
+    ndcg = ndcg_score(masked_true, raw_pred,k=k)
     return ndcg
 
 
 def get_mrr(ranklist,sg):
     for i in range(len(ranklist)):
         if ranklist[i] in sg:
-            return 1/i
+            return 1/(i+1)
     return 0
