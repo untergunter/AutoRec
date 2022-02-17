@@ -24,6 +24,6 @@ def load_model(model_class, activation, hidden_size, lr, λ, is_default_dataset)
     model.eval()
     return model
 
-def get_model_attr_from_path(path):
+def attr_from_path(path):
     class_name,activation,hidden_size,lr,λ,data_set_name = path.split(os.sep)[-1].replace('_model_dict.ckpt','').split('_')
     return class_name,activation,hidden_size,lr,λ,data_set_name
